@@ -261,10 +261,10 @@ export default function IndiaMap({
             }}
           />
         )}
-      </MapContainer>
 
-      {/* MAP LEGEND */}
-      <MapLegend viewMode={viewMode} hazard={hazard} />
+        {/* MAP LEGEND — inside MapContainer so useMap() works and it stays clipped */}
+        <MapLegend viewMode={viewMode} hazard={hazard} />
+      </MapContainer>
     </div>
   );
 }

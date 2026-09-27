@@ -16,7 +16,17 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Play, Pause } from "lucide-react";
+import {
+  Play,
+  Pause,
+  CloudRain,
+  Thermometer,
+  Wind,
+  ShieldAlert,
+  CloudDrizzle,
+  Satellite,
+  Map,
+} from "lucide-react";
 
 export default function ControlsBar({
   hazard,
@@ -48,36 +58,61 @@ export default function ControlsBar({
     return () => clearInterval(interval);
   }, [isPlaying, setLeadDay]);
 
+  // Dynamic field icon for view mode toggle
+  const fieldIcon =
+    hazard === "temp" ? <Thermometer className="h-3.5 w-3.5" /> :
+    hazard === "wind" ? <Wind className="h-3.5 w-3.5" /> :
+    <CloudDrizzle className="h-3.5 w-3.5" />;
+
+  const fieldLabel =
+    hazard === "temp" ? "Temperature Field" :
+    hazard === "wind" ? "Wind Speed Field" :
+    "Precipitation Forecast";
+
   return (
     <TooltipProvider>
       <section className="rounded-2xl bg-white p-5 shadow-xs border border-slate-200 space-y-4">
+
         {/* ROW 1: HAZARD DOMAIN SELECTOR */}
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="text-base font-bold text-slate-900">
-              Multi-Hazard Target Selector
-            </h2>
+            <h2 className="text-base font-bold text-slate-900">Multi-Hazard Target Selector</h2>
             <p className="text-xs text-slate-500 font-medium">
               Select hazard domain to evaluate dedicated calibrated forecast bust models.
             </p>
           </div>
 
-          <ToggleGroup value={hazard} onValueChange={(v) => v && setHazard(v)}>
+          <ToggleGroup
+            value={hazard}
+            onValueChange={(v) => v && setHazard(v)}
+            className="w-full lg:w-auto justify-start lg:justify-end"
+          >
             <Tooltip>
               <TooltipTrigger asChild>
-                <ToggleGroupItem value="rain">🌧️ Heavy Rain Busts</ToggleGroupItem>
+                <ToggleGroupItem value="rain" className="flex-1 sm:flex-none justify-center gap-1.5 text-[11px] sm:text-xs">
+                  <CloudRain className="h-3.5 w-3.5 shrink-0" />
+                  Heavy Rain
+                </ToggleGroupItem>
               </TooltipTrigger>
               <TooltipContent>Evaluate heavy rainfall forecast bust probability</TooltipContent>
             </Tooltip>
+
             <Tooltip>
               <TooltipTrigger asChild>
-                <ToggleGroupItem value="temp">🌡️ Heatwave Temp Busts</ToggleGroupItem>
+                <ToggleGroupItem value="temp" className="flex-1 sm:flex-none justify-center gap-1.5 text-[11px] sm:text-xs">
+                  <Thermometer className="h-3.5 w-3.5 shrink-0" />
+                  Heatwave Temp
+                </ToggleGroupItem>
               </TooltipTrigger>
               <TooltipContent>Evaluate temperature-based heatwave bust probability</TooltipContent>
             </Tooltip>
+
             <Tooltip>
               <TooltipTrigger asChild>
-                <ToggleGroupItem value="wind">💨 Windstorm Busts</ToggleGroupItem>
+                <ToggleGroupItem value="wind" className="flex-1 sm:flex-none justify-center gap-1.5 text-[11px] sm:text-xs">
+                  <Wind className="h-3.5 w-3.5 shrink-0" />
+                  Windstorm
+                </ToggleGroupItem>
               </TooltipTrigger>
               <TooltipContent>Evaluate windstorm forecast bust probability</TooltipContent>
             </Tooltip>
@@ -86,48 +121,52 @@ export default function ControlsBar({
 
         <Separator />
 
-        {/* ROW 2: FORECAST HORIZON & VIEW MODE */}
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-3">
-            <div>
-              <h2 className="text-base font-bold text-slate-900">
-                Forecast Horizon & Radar Loop
-              </h2>
-              <p className="text-xs text-slate-500 font-medium">
-                Select lead day (1–10) or launch automated 10-day risk progression playback.
-              </p>
-            </div>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant={isPlaying ? "destructive" : "outline"}
-                  size="sm"
-                  onClick={() => setIsPlaying(!isPlaying)}
-                  className="ml-2 h-8 text-xs font-bold gap-1.5 shrink-0"
-                >
-                  {isPlaying ? (
-                    <><Pause className="h-3.5 w-3.5" /> Pause Loop</>
-                  ) : (
-                    <><Play className="h-3.5 w-3.5" /> Play 10-Day Loop</>
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {isPlaying ? "Pause the 10-day playback animation" : "Auto-advance through all 10 lead days"}
-              </TooltipContent>
-            </Tooltip>
+        {/* ROW 2: FORECAST HORIZON & PLAY BUTTON */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-base font-bold text-slate-900">Forecast Horizon & Radar Loop</h2>
+            <p className="text-xs text-slate-500 font-medium">
+              Select lead day (1–10) or launch automated 10-day risk progression playback.
+            </p>
           </div>
 
-          {/* VIEW MODE TOGGLE */}
-          <ToggleGroup value={viewMode} onValueChange={(v) => v && setViewMode(v)}>
-            <ToggleGroupItem value="risk">🛡️ Bust Risk & Confidence</ToggleGroupItem>
-            <ToggleGroupItem value="field">
-              {hazard === "temp"
-                ? "🌡️ Temperature Field"
-                : hazard === "wind"
-                ? "💨 Wind Speed Field"
-                : "🌧️ Precipitation Forecast"}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={isPlaying ? "destructive" : "outline"}
+                size="sm"
+                onClick={() => setIsPlaying(!isPlaying)}
+                className="h-8 text-xs font-bold gap-1.5 shrink-0"
+              >
+                {isPlaying
+                  ? <><Pause className="h-3.5 w-3.5" /> Pause Loop</>
+                  : <><Play  className="h-3.5 w-3.5" /> Play 10-Day Loop</>
+                }
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {isPlaying ? "Pause the 10-day playback animation" : "Auto-advance through all 10 lead days"}
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
+        {/* VIEW MODE TOGGLE */}
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Map View Mode
+          </span>
+          <ToggleGroup
+            value={viewMode}
+            onValueChange={(v) => v && setViewMode(v)}
+            className="w-full justify-start"
+          >
+            <ToggleGroupItem value="risk" className="flex-1 sm:flex-none justify-center gap-1.5">
+              <ShieldAlert className="h-3.5 w-3.5 shrink-0" />
+              Bust Risk & Confidence
+            </ToggleGroupItem>
+            <ToggleGroupItem value="field" className="flex-1 sm:flex-none justify-center gap-1.5">
+              {fieldIcon}
+              {fieldLabel}
             </ToggleGroupItem>
           </ToggleGroup>
         </div>
@@ -141,7 +180,7 @@ export default function ControlsBar({
 
         <Separator />
 
-        {/* ROW 3: QUICK FILTERS & MAP THEME SELECTOR */}
+        {/* ROW 3: QUICK FILTERS & MAP THEME */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-4">
             {/* RISK FILTER */}
@@ -185,11 +224,18 @@ export default function ControlsBar({
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-slate-700">Map Theme:</span>
             <ToggleGroup value={mapTheme} onValueChange={(v) => v && setMapTheme(v)}>
-              <ToggleGroupItem value="satellite" className="text-[11px]">🛰️ Satellite</ToggleGroupItem>
-              <ToggleGroupItem value="standard" className="text-[11px]">🗺️ Standard</ToggleGroupItem>
+              <ToggleGroupItem value="satellite" className="gap-1.5 text-[11px]">
+                <Satellite className="h-3.5 w-3.5 shrink-0" />
+                Satellite
+              </ToggleGroupItem>
+              <ToggleGroupItem value="standard" className="gap-1.5 text-[11px]">
+                <Map className="h-3.5 w-3.5 shrink-0" />
+                Standard
+              </ToggleGroupItem>
             </ToggleGroup>
           </div>
         </div>
+
       </section>
     </TooltipProvider>
   );

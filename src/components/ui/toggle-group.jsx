@@ -14,7 +14,7 @@ const ToggleGroup = React.forwardRef(
         ref={ref}
         role="group"
         className={cn(
-          "inline-flex items-center gap-1 rounded-xl bg-slate-100 border border-slate-200/60 p-1.5",
+          "inline-flex flex-wrap items-center gap-1 rounded-xl bg-slate-100 border border-slate-200/60 p-1.5",
           className
         )}
         {...props}
@@ -38,7 +38,7 @@ const ToggleGroupItem = React.forwardRef(
         aria-checked={isActive}
         onClick={() => ctx.onValueChange(value)}
         className={cn(
-          "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+          "inline-flex items-center px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 whitespace-nowrap",
           isActive
             ? "bg-white text-blue-700 shadow-sm border border-slate-200"
             : "text-slate-700 hover:text-slate-900 hover:bg-slate-200/60",

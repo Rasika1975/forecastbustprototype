@@ -14,7 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import { Info, CloudRain, Thermometer, Wind } from "lucide-react";
 
 export default function VerificationModal({ isOpen, onClose }) {
   const [data, setData] = useState(null);
@@ -88,9 +88,18 @@ export default function VerificationModal({ isOpen, onClose }) {
               </div>
 
               <ToggleGroup value={activeHazard} onValueChange={(v) => v && setActiveHazard(v)}>
-                <ToggleGroupItem value="rain">🌧️ Rainfall</ToggleGroupItem>
-                <ToggleGroupItem value="temp">🌡️ Heatwave</ToggleGroupItem>
-                <ToggleGroupItem value="wind">💨 Windstorm</ToggleGroupItem>
+                <ToggleGroupItem value="rain" className="gap-1.5">
+                  <CloudRain className="h-3.5 w-3.5 shrink-0" />
+                  Rainfall
+                </ToggleGroupItem>
+                <ToggleGroupItem value="temp" className="gap-1.5">
+                  <Thermometer className="h-3.5 w-3.5 shrink-0" />
+                  Heatwave
+                </ToggleGroupItem>
+                <ToggleGroupItem value="wind" className="gap-1.5">
+                  <Wind className="h-3.5 w-3.5 shrink-0" />
+                  Windstorm
+                </ToggleGroupItem>
               </ToggleGroup>
             </div>
 

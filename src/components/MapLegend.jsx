@@ -1,87 +1,125 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { useMap } from "react-leaflet";
+import L from "leaflet";
+
+// Legend data ----------------------------------------------------------------
 
 const riskLevels = [
-  { label: "0–20% (Very Low / 80–100% Confidence)", color: "#10b981", badge: "High Confidence" },
-  { label: "20–40% (Low / 60–80% Confidence)", color: "#84cc16", badge: "Moderate High" },
-  { label: "40–60% (Moderate / 40–60% Confidence)", color: "#f59e0b", badge: "Caution" },
-  { label: "60–80% (High / 20–40% Confidence)", color: "#f97316", badge: "Elevated Danger" },
-  { label: "80–100% (Very High / 0–20% Confidence)", color: "#ef4444", badge: "Bust Alert" },
+  { label: "0–20% Very Low", color: "#10b981" },
+  { label: "20–40% Low", color: "#84cc16" },
+  { label: "40–60% Moderate", color: "#f59e0b" },
+  { label: "60–80% High", color: "#f97316" },
+  { label: "80–100% Very High", color: "#ef4444" },
 ];
-
 const rainLevels = [
-  { label: "< 5 mm (Trace / Dry)", color: "#dcfce7" },
-  { label: "5–20 mm (Light Rain)", color: "#86efac" },
-  { label: "20–50 mm (Moderate Rain)", color: "#fde047" },
-  { label: "50–100 mm (Heavy Rain)", color: "#fb923c" },
-  { label: "> 100 mm (Extreme Rain)", color: "#ef4444" },
+  { label: "< 5 mm Trace", color: "#dcfce7" },
+  { label: "5–20 mm Light", color: "#86efac" },
+  { label: "20–50 mm Moderate", color: "#fde047" },
+  { label: "50–100 mm Heavy", color: "#fb923c" },
+  { label: "> 100 mm Extreme", color: "#ef4444" },
 ];
-
 const tempLevels = [
-  { label: "< 25 °C (Cool / Normal)", color: "#93c5fd" },
-  { label: "25–32 °C (Moderate Temp)", color: "#fde047" },
-  { label: "32–38 °C (Warm / Hot)", color: "#fb923c" },
-  { label: "38–44 °C (Severe Heatwave)", color: "#ef4444" },
-  { label: "> 44 °C (Extreme Heat Alert)", color: "#991b1b" },
+  { label: "< 25 °C Cool", color: "#93c5fd" },
+  { label: "25–32 °C Moderate", color: "#fde047" },
+  { label: "32–38 °C Hot", color: "#fb923c" },
+  { label: "38–44 °C Severe", color: "#ef4444" },
+  { label: "> 44 °C Extreme", color: "#991b1b" },
 ];
-
 const windLevels = [
-  { label: "< 15 km/h (Light Breeze)", color: "#ccfbf1" },
-  { label: "15–35 km/h (Moderate Wind)", color: "#5eead4" },
-  { label: "35–55 km/h (Strong Wind)", color: "#0d9488" },
-  { label: "55–75 km/h (Gale / Storm)", color: "#0f766e" },
-  { label: "> 75 km/h (Severe Cyclone)", color: "#115e59" },
+  { label: "< 15 km/h Light", color: "#ccfbf1" },
+  { label: "15–35 km/h Moderate", color: "#5eead4" },
+  { label: "35–55 km/h Strong", color: "#0d9488" },
+  { label: "55–75 km/h Gale", color: "#0f766e" },
+  { label: "> 75 km/h Cyclone", color: "#115e59" },
 ];
 
-export default function MapLegend({ viewMode = "risk", hazard = "rain" }) {
-  const isRiskMode = viewMode === "risk";
+// Legend UI (plain inline styles — lives inside Leaflet DOM) -----------------
+
+function LegendUI({ viewMode, hazard }) {
+  const [collapsed, setCollapsed] = useState(false);
 
   let levels = riskLevels;
-  let title = "Bust Risk & Confidence";
-  let footer = "Confidence = 1 − P(Bust). Calibrated P90 error threshold per cell.";
-
-  if (!isRiskMode) {
-    if (hazard === "temp") {
-      levels = tempLevels;
-      title = "2m Surface Temperature (°C)";
-      footer = "ECMWF IFS 0.25° grid 2m surface temperature field.";
-    } else if (hazard === "wind") {
-      levels = windLevels;
-      title = "10m Wind Speed (km/h)";
-      footer = "ECMWF IFS 0.25° grid 10m surface wind velocity.";
-    } else {
-      levels = rainLevels;
-      title = "Forecast Precipitation (mm)";
-      footer = "ECMWF IFS 0.25° 24-hr cumulative surface precipitation.";
-    }
+  let title = "Bust Risk";
+  if (viewMode !== "risk") {
+    if (hazard === "temp") { levels = tempLevels; title = "Temperature"; }
+    else if (hazard === "wind") { levels = windLevels; title = "Wind Speed"; }
+    else { levels = rainLevels; title = "Precipitation"; }
   }
 
-  return (
-    <Card className="absolute bottom-4 left-4 z-[1000] max-w-[270px] bg-white/95 backdrop-blur border-slate-200 shadow-lg rounded-xl">
-      <CardContent className="p-3.5">
-        <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-800">
-          {title}
-        </p>
+  const card = {
+    background: "rgba(255,255,255,0.96)",
+    backdropFilter: "blur(6px)",
+    border: "1px solid #e2e8f0",
+    borderRadius: "12px",
+    boxShadow: "0 4px 16px rgba(15,23,42,0.18)",
+    minWidth: "130px",
+    maxWidth: "165px",
+    overflow: "hidden",
+    fontFamily: "system-ui,-apple-system,sans-serif",
+  };
 
-        <div className="space-y-1.5">
-          {levels.map((level) => (
-            <div
-              key={level.label}
-              className="flex items-center gap-2 text-xs text-slate-700"
-            >
-              <span
-                className="h-3.5 w-3.5 rounded shrink-0 border border-black/10"
-                style={{ backgroundColor: level.color }}
-              />
-              <span className="font-medium leading-snug">{level.label}</span>
+  return (
+    <div style={card}>
+      {/* Header — tap to collapse */}
+      <button
+        type="button"
+        onClick={() => setCollapsed((c) => !c)}
+        style={{
+          display: "flex", width: "100%", alignItems: "center",
+          justifyContent: "space-between", padding: "7px 10px",
+          background: "none", border: "none", cursor: "pointer", gap: "6px",
+        }}
+      >
+        <span style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "#1e293b" }}>
+          {title}
+        </span>
+        <span style={{ color: "#94a3b8", fontSize: "11px", lineHeight: 1 }}>
+          {collapsed ? "▾" : "▴"}
+        </span>
+      </button>
+
+      {!collapsed && (
+        <div style={{ padding: "0 10px 9px", borderTop: "1px solid #f1f5f9" }}>
+          {levels.map((lv) => (
+            <div key={lv.label} style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "5px" }}>
+              <span style={{ width: "11px", height: "11px", borderRadius: "3px", flexShrink: 0, border: "1px solid rgba(0,0,0,0.1)", background: lv.color }} />
+              <span style={{ fontSize: "10px", fontWeight: 500, color: "#334155", lineHeight: 1.3 }}>
+                {lv.label}
+              </span>
             </div>
           ))}
         </div>
-
-        <Separator className="my-2" />
-
-        <p className="text-[10px] text-slate-500 leading-tight">{footer}</p>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
+}
+
+// Leaflet Control — renders inside the map DOM so it never escapes -----------
+
+export default function MapLegend({ viewMode, hazard }) {
+  const map = useMap();
+  const [container, setContainer] = useState(null);
+
+  useEffect(() => {
+    const LegendControl = L.Control.extend({
+      onAdd() {
+        const div = L.DomUtil.create("div");
+        L.DomEvent.disableClickPropagation(div);
+        L.DomEvent.disableScrollPropagation(div);
+        setContainer(div);
+        return div;
+      },
+      onRemove() {
+        setContainer(null);
+      },
+    });
+
+    const ctrl = new LegendControl({ position: "bottomleft" });
+    ctrl.addTo(map);
+    return () => { ctrl.remove(); };
+  }, [map]);
+
+  if (!container) return null;
+  return createPortal(<LegendUI viewMode={viewMode} hazard={hazard} />, container);
 }
