@@ -7,6 +7,10 @@ import GridInfoPanel from "./components/GridInfoPanel";
 import SearchCommand from "./components/SearchCommand";
 import VerificationModal from "./components/VerificationModal";
 import { getForecastData, getDaySummary } from "./services/staticDataService";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { AlertTriangle } from "lucide-react";
 
 const TOTAL_INDIA_GRID_CELLS = 4651;
 
@@ -102,15 +106,21 @@ export default function App() {
 
         {/* ERROR NOTIFICATION */}
         {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs font-medium text-red-700 shadow-xs flex items-center justify-between">
-            <span>❌ {error}</span>
-            <button
+          <Alert variant="destructive" className="flex items-center justify-between">
+            <AlertTriangle className="h-4 w-4" />
+            <div className="flex-1 ml-2">
+              <AlertTitle>Data Load Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </div>
+            <Button
+              size="sm"
+              variant="destructive"
               onClick={() => loadForecast(leadDay)}
-              className="px-3 py-1 bg-red-600 text-white rounded-lg font-bold text-xs hover:bg-red-700 cursor-pointer"
+              className="ml-4 shrink-0 h-7 text-xs font-bold"
             >
               Retry
-            </button>
-          </div>
+            </Button>
+          </Alert>
         )}
 
         {/* MAIN DASHBOARD CONTENT GRID */}
@@ -160,22 +170,29 @@ export default function App() {
                 Valid Date: {forecast?.valid_date || "2026-09-24"}
               </h2>
 
+              <Separator />
+
               <div className="space-y-2 text-xs">
-                <div className="flex justify-between py-1 border-b border-slate-100">
+                <div className="flex justify-between py-1">
                   <span className="text-slate-500">Total Grid Cells</span>
                   <span className="font-semibold text-slate-900">{TOTAL_INDIA_GRID_CELLS}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-slate-100">
+                <Separator />
+                <div className="flex justify-between py-1">
                   <span className="text-slate-500">Spatial Resolution</span>
                   <span className="font-semibold text-slate-800">0.25° (~27 km)</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-slate-100">
+                <Separator />
+                <div className="flex justify-between py-1">
                   <span className="text-slate-500">Data Feed</span>
                   <span className="font-semibold text-emerald-600">Vercel Edge Static Engine</span>
                 </div>
+                <Separator />
                 <div className="flex justify-between py-1">
                   <span className="text-slate-500">Mean Domain Confidence</span>
-                  <span className="font-semibold text-emerald-600">{summary?.average_confidence ? `${summary.average_confidence}%` : "Calculated"}</span>
+                  <span className="font-semibold text-emerald-600">
+                    {summary?.average_confidence ? `${summary.average_confidence}%` : "Calculated"}
+                  </span>
                 </div>
               </div>
             </div>

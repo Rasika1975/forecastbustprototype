@@ -10,6 +10,11 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Info } from "lucide-react";
 
 export default function VerificationModal({ isOpen, onClose }) {
   const [data, setData] = useState(null);
@@ -31,9 +36,9 @@ export default function VerificationModal({ isOpen, onClose }) {
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
-            <span className="rounded-md bg-blue-700 px-2.5 py-0.5 text-[11px] font-black text-white shadow-xs tracking-wider uppercase">
+            <Badge className="rounded-md bg-blue-700 px-2.5 py-0.5 text-[11px] font-black text-white shadow-xs tracking-wider uppercase border-0">
               Section 19 Verification
-            </span>
+            </Badge>
             <span className="text-xs text-slate-600 font-bold">• Problem Statement 26079</span>
           </div>
           <DialogTitle className="text-xl">
@@ -44,62 +49,49 @@ export default function VerificationModal({ isOpen, onClose }) {
           </DialogDescription>
         </DialogHeader>
 
-        {/* Content */}
         <div className="space-y-6 text-sm text-slate-700 py-2">
           {/* Metadata Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-              <p className="text-xs text-slate-500 font-medium">Model Architecture</p>
-              <p className="font-bold text-slate-900 mt-0.5">{data?.model_name || "Calibrated XGBoost"}</p>
-              <p className="text-[11px] text-slate-400 mt-1">Version: {data?.model_version || "1.2.0"}</p>
-            </div>
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-              <p className="text-xs text-slate-500 font-medium">Evaluation Split</p>
-              <p className="font-bold text-slate-900 mt-0.5">Chronological Holdout (2025)</p>
-              <p className="text-[11px] text-slate-400 mt-1">93,020 unseen test samples</p>
-            </div>
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-              <p className="text-xs text-slate-500 font-medium">Target Definition</p>
-              <p className="font-bold text-slate-900 mt-0.5">P90 Absolute Error</p>
-              <p className="text-[11px] text-slate-400 mt-1">Grid-cell & Lead-time specific</p>
-            </div>
+            <Card className="border-slate-200 bg-slate-50">
+              <CardContent className="p-3.5">
+                <p className="text-xs text-slate-500 font-medium">Model Architecture</p>
+                <p className="font-bold text-slate-900 mt-0.5">{data?.model_name || "Calibrated XGBoost"}</p>
+                <p className="text-[11px] text-slate-400 mt-1">Version: {data?.model_version || "1.2.0"}</p>
+              </CardContent>
+            </Card>
+            <Card className="border-slate-200 bg-slate-50">
+              <CardContent className="p-3.5">
+                <p className="text-xs text-slate-500 font-medium">Evaluation Split</p>
+                <p className="font-bold text-slate-900 mt-0.5">Chronological Holdout (2025)</p>
+                <p className="text-[11px] text-slate-400 mt-1">93,020 unseen test samples</p>
+              </CardContent>
+            </Card>
+            <Card className="border-slate-200 bg-slate-50">
+              <CardContent className="p-3.5">
+                <p className="text-xs text-slate-500 font-medium">Target Definition</p>
+                <p className="font-bold text-slate-900 mt-0.5">P90 Absolute Error</p>
+                <p className="text-[11px] text-slate-400 mt-1">Grid-cell & Lead-time specific</p>
+              </CardContent>
+            </Card>
           </div>
+
+          <Separator />
 
           {/* Lead-wise Metrics Table */}
           <div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
               <div>
                 <h3 className="font-bold text-slate-900 text-sm">
                   Lead-Time Verification Slices (Day 1 – Day 10)
                 </h3>
                 <p className="text-xs text-slate-500">Evaluated on 9,302 test grid cells per lead day</p>
               </div>
-              <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
-                <button
-                  onClick={() => setActiveHazard("rain")}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition ${
-                    activeHazard === "rain" ? "bg-white text-blue-600 shadow-xs" : "text-slate-600"
-                  }`}
-                >
-                  🌧️ Rainfall
-                </button>
-                <button
-                  onClick={() => setActiveHazard("temp")}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition ${
-                    activeHazard === "temp" ? "bg-white text-amber-600 shadow-xs" : "text-slate-600"
-                  }`}
-                >
-                  🌡️ Heatwave Temp
-                </button>
-                <button
-                  onClick={() => setActiveHazard("wind")}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition ${
-                    activeHazard === "wind" ? "bg-white text-teal-600 shadow-xs" : "text-slate-600"
-                  }`}
-                >
-                  💨 Windstorm
-                </button>
-              </div>
+
+              <ToggleGroup value={activeHazard} onValueChange={(v) => v && setActiveHazard(v)}>
+                <ToggleGroupItem value="rain">🌧️ Rainfall</ToggleGroupItem>
+                <ToggleGroupItem value="temp">🌡️ Heatwave</ToggleGroupItem>
+                <ToggleGroupItem value="wind">💨 Windstorm</ToggleGroupItem>
+              </ToggleGroup>
             </div>
 
             <div className="overflow-x-auto border border-slate-200 rounded-xl">
@@ -143,22 +135,23 @@ export default function VerificationModal({ isOpen, onClose }) {
           </div>
 
           {/* Key Findings Callout */}
-          <div className="rounded-xl border border-blue-200 bg-blue-50/60 p-4 space-y-2 text-xs text-blue-900">
-            <h4 className="font-bold flex items-center gap-1.5 text-blue-950">
-              <span>Scientific & Operational Validation Summary:</span>
-            </h4>
-            <ul className="list-disc pl-4 space-y-1 text-slate-700">
-              <li>
-                <strong>PR-AUC & Brier Score:</strong> Because forecast busts are rare events (P90 threshold ~10-15%), accuracy alone is deceptive. The calibrated model achieves high precision and low Brier score (0.13 - 0.14) across all horizons.
-              </li>
-              <li>
-                <strong>Probability Calibration:</strong> Expected Calibration Error (ECE) is below 0.025 across all lead times, confirming that predicted probabilities reflect true empirical bust frequencies.
-              </li>
-              <li>
-                <strong>Skill Degradation:</strong> ROC-AUC scales from 0.65 at Day 1 to 0.71 at Day 10, demonstrating strong predictive ranking capability even as forecast uncertainty expands in the medium range.
-              </li>
-            </ul>
-          </div>
+          <Alert variant="info">
+            <Info className="h-4 w-4" />
+            <AlertDescription className="ml-2">
+              <p className="font-bold text-blue-950 mb-2">Scientific & Operational Validation Summary:</p>
+              <ul className="list-disc pl-4 space-y-1 text-slate-700 text-xs">
+                <li>
+                  <strong>PR-AUC & Brier Score:</strong> Because forecast busts are rare events (P90 threshold ~10-15%), accuracy alone is deceptive. The calibrated model achieves high precision and low Brier score (0.13 – 0.14) across all horizons.
+                </li>
+                <li>
+                  <strong>Probability Calibration:</strong> Expected Calibration Error (ECE) is below 0.025 across all lead times, confirming that predicted probabilities reflect true empirical bust frequencies.
+                </li>
+                <li>
+                  <strong>Skill Degradation:</strong> ROC-AUC scales from 0.65 at Day 1 to 0.71 at Day 10, demonstrating strong predictive ranking capability even as forecast uncertainty expands in the medium range.
+                </li>
+              </ul>
+            </AlertDescription>
+          </Alert>
         </div>
 
         <DialogFooter>
