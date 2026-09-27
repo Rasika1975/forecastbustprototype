@@ -83,7 +83,7 @@ export default function App() {
       />
 
       {/* MAIN CONTAINER */}
-      <main className="mx-auto max-w-[1600px] w-full space-y-5 px-6 py-6 flex-1">
+      <main className="mx-auto max-w-[1600px] w-full space-y-4 sm:space-y-5 px-3 sm:px-6 py-4 sm:py-6 flex-1">
         {/* TOP KPI STAT CARDS */}
         <StatCards summary={summary} leadDay={leadDay} hazard={hazard} />
 
